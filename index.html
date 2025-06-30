@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Searchable Todo List</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link href="./styles.css" rel="stylesheet">
+    </head>
+    <body class="min-vh-100 d-flex justify-content-center py-4">
+        <main class="container-lg">
+            <h1 class="text-center mb-5">Searchable Todo List</h1>
+
+            <div class="row">
+                <form class="mb-4 col-sm-12 col-lg-6" name="addTodoForm" onsubmit="return handleAddTodo(event)" method="POST">
+                    <label class="form-label">
+                        Add Todo
+                        <input class="form-control" name="todo" placeholder="..." maxlength="40">
+                    </label>
+
+                    <label class="form-label">
+                        Priority
+                        <select class="form-select" name="priority">
+                            <option value=1>Very High</option>
+                            <option value=2>High</option>
+                            <option value=3 selected>Normal</option>
+                            <option value=4>Optional</option>
+                        </select>
+                    </label>
+
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+
+                <form class="mb-4 col" name="searchTodosForm" onsubmit="return handleSearchTodos(event)" onreset="return handleSearchTodosReset()" method="GET">
+                    <label class="form-label">
+                        Search Todos
+                        <input class="form-control" name="query" placeholder="...">
+                    </label>
+
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="reset" class="btn btn-danger">Clear</button>
+                </form>
+            </div>
+
+            <div class="row border border-2 border-secondary meow">
+                <div class="col p-0">
+                    <h4 class="text-center text-light bg-dark m-0 p-1">Pending</h4>
+                    <div id="pendList" class="col border-end border-secondary p-0"></div>
+
+                    <h4 class="text-center text-light bg-dark m-0 p-1">Completed</h4>
+                    <div id="compList" class="col border-start border-secondary p-0"></div>
+                </div>
+            </div>
+        </main>
+
+        <script src="./script.js"></script>
+    </body>
+</html>

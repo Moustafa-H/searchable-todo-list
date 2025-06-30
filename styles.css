@@ -1,0 +1,33 @@
+#pendList, #compList {
+    overflow-x: hidden;
+    min-height: 5vh;
+}
+
+.meow {
+ display: flex;
+ flex-direction: column;
+}
+
+#pendList div, #compList div {
+    padding: 0.5rem;
+    transition: opacity 200ms;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+#pendList div:hover, #compList div:hover {
+    opacity: 0.8;
+}
+
+#pendList div {
+    background-color: orange;
+}
+
+#compList div {
+    background-color: lime;
+}
+
+#pendList div span, #compList div span {
+    overflow-x: auto;
+}
