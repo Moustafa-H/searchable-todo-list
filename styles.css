@@ -3,11 +3,6 @@
     min-height: 5vh;
 }
 
-.meow {
- display: flex;
- flex-direction: column;
-}
-
 #pendList div, #compList div {
     padding: 0.5rem;
     transition: opacity 200ms;

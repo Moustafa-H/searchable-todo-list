@@ -5,15 +5,21 @@ const priorities = {
     4: 'Optional'
 }
 
-const pendTodos = []
-const compTodos = []
+let nextId = 1
+let todos = []
 
-const printList = (element, list) => {
-    elem = document.getElementById(element)
-    elem.innerHTML = ''
+const printTodos = (list = todos) => {
+    const pendList = document.getElementById('pendList')
+    const compList = document.getElementById('compList')
+    pendList.innerHTML = ''
+    compList.innerHTML = ''
     list.sort((a, b) => a.priority - b.priority)
     for (const item of list) {
-        elem.innerHTML += '<div><span>' + item.text + '</span><em>' + priorities[item.priority] + '</em></div>'
+        if (item.status === 'pending') {
+            pendList.innerHTML += '<div id="' + item.id + '" draggable="true" ondragstart="dragstartHandler(event)"><span>' + item.text +'</span><em>' + priorities[item.priority] + '</em></div>'
+        } else {
+            compList.innerHTML += '<div id="' + item.id + '" draggable="true" ondragstart="dragstartHandler(event)"><span>' + item.text +'</span><em>' + priorities[item.priority] + '</em></div>'
+        }
     }
 }
 
@@ -22,23 +28,36 @@ function handleAddTodo(e) {
     const todo = document.forms["addTodoForm"]["todo"].value
     const priority = document.forms["addTodoForm"]["priority"].value
     if (todo) {
-        document.forms["addTodoForm"].reset()
+        document.forms["addTodoForm"]["todo"].value = ''
         document.forms["searchTodosForm"].reset()
-        pendTodos.push({ text: todo, priority: priority })
-        printList('pendList', pendTodos)
+        todos.push({ id: nextId++, text: todo, priority: priority, status: 'pending' })
+        printTodos()
     }
 }
 
 function handleSearchTodos(e) {
     e.preventDefault()
     const query = document.forms["searchTodosForm"]["query"].value
-    filteredPendTodos = pendTodos.filter(s => s.text.includes(query))
-    filteredCompTodos = compTodos.filter(s => s.text.includes(query))
-    printList('pendList', filteredPendTodos)
-    printList('compList', filteredCompTodos)
+    filteredTodos = todos.filter(s => s.text.includes(query))
+    printTodos(filteredTodos)
 }
 
 function handleSearchTodosReset() {
-    printList('pendList', pendTodos)
-    printList('compList', compTodos)
+    printTodos()
+}
+
+function dragstartHandler(ev) {
+    ev.dataTransfer.setData("id", ev.target.id);
+}
+
+function dragoverHandler(ev) {
+    ev.preventDefault();
+}
+
+function dropHandler(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("id");
+    const todo = todos.find(s => s.id == data)
+    todo.status = ev.currentTarget.id == 'pendList' ? 'pending' : 'completed'
+    printTodos()
 }
