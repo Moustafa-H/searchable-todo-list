@@ -1,15 +1,3 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyAWMyd3o5sBcA0m4m22y6bZFTns1jA4prY",
-    authDomain: "searchable-todo-list.firebaseapp.com",
-    projectId: "searchable-todo-list",
-    storageBucket: "searchable-todo-list.firebasestorage.app",
-    messagingSenderId: "199763559022",
-    appId: "1:199763559022:web:5014ccf6a6bc8593d35c7f"
-}
-
-firebase.initializeApp(firebaseConfig)
-const db = firebase.firestore()
-
 const priorities = {
     1: 'Very High',
     2: 'High',
@@ -34,7 +22,7 @@ const printTodos = (list = todos) => {
     }
 }
 
-function handleAddTodo(e) {
+async function handleAddTodo(e) {
     e.preventDefault()
     const todo = document.forms["addTodoForm"]["todo"].value
     const priority = document.forms["addTodoForm"]["priority"].value
@@ -42,18 +30,28 @@ function handleAddTodo(e) {
         document.forms["addTodoForm"]["todo"].value = ''
         document.forms["searchTodosForm"].reset()
 
-        db.collection("todos").add({
-            text: todo,
-            priority: priority,
-            status: 'pending'
-        })
-        .then((docRef) => {
-            todos.push({ id: docRef.id, text: todo, priority: priority, status: 'pending' })
+        fields = {
+            text: { stringValue: todo },
+            priority: { stringValue: priority },
+            status: { stringValue: 'pending' }
+        }
+
+        try {
+            const response = await fetch('https://firestore.googleapis.com/v1/projects/searchable-todo-list/databases/(default)/documents/todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+            })
+            const json = await response.json()
+            const idArr = json.name.split('/')
+            const id = idArr[idArr.length - 1]
+            todos.push({ id: id, text: todo, priority: priority, status: 'pending' })
             printTodos()
-        })
-        .catch((error) => {
-            console.error("Error adding document: ", error);
-        })
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
 
@@ -84,21 +82,37 @@ function dropHandler(ev) {
     todo.status = newStatus
     printTodos()
 
-    db.collection("todos").doc(data).update({
-        status: newStatus
+    fetch(`https://firestore.googleapis.com/v1/projects/searchable-todo-list/databases/(default)/documents/todos/${data}?updateMask.fieldPaths=status`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            fields: {
+                status: { stringValue: newStatus }
+            }
+        })
     })
-    .then(() => {
-        console.log("Document successfully updated!");
+    .then((response) => response.json())
+    .then((data) => {
+        console.log('Change to:', data.fields.status.stringValue)
     })
-    .catch((error) => {
-        console.error("Error updating document: ", error);
-    })
+    .catch((error) => console.log(error))
 }
 
-db.collection("todos").get().then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-        const todo = doc.data()
-        todos.push({ id: doc.id, text: todo.text, priority: todo.priority, status: todo.status })
-    })
+fetch('https://firestore.googleapis.com/v1/projects/searchable-todo-list/databases/(default)/documents/todos')
+.then((response) => response.json())
+.then((data) => {
+    for (const todo of data.documents) {
+        const idArr = todo.name.split('/')
+        const id = idArr[idArr.length - 1]
+        todos.push({
+            id: id,
+            text: todo.fields.text.stringValue,
+            priority: todo.fields.priority.stringValue,
+            status: todo.fields.status.stringValue
+        })
+    }
     printTodos()
 })
+.catch((error) => console.log(error))
